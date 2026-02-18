@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
  export const placeOrder = async (req,res) => {
 
-  const frontend_url = 'https://food-delivery-website-e-commerce.onrender.com'
+  const frontend_url = 'https://food-delivery-website-e-commerce-ahxw.onrender.com'
 
   try {
    const newOrder = new orderModel({
