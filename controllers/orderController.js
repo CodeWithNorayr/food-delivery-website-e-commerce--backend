@@ -84,7 +84,7 @@ export const verifyOrder = async (req, res) => {
       return res.json({ success: true, message: "Payment successful" });
     } else {
       // Optional: keep failed order instead of deleting
-      await orderModel.findByIdAndDelete({orderId});
+      await orderModel.findByIdAndDelete(orderId);
       return res.json({ success: false, message: "Payment not completed" });
     }
 
