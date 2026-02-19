@@ -24,7 +24,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
         product_data:{
           name:item.name
         },
-        unit_amount:item.price*100*80
+        unit_amount:item.price*100
       },
       quantity:item.quantity
    }))
