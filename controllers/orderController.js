@@ -80,11 +80,11 @@ export const verifyOrder = async (req, res) => {
     }
 
     if (success === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { payment: true, status: "Paid" });
+      await orderModel.findByIdAndUpdate(orderId, { payment: true });
       return res.json({ success: true, message: "Payment successful" });
     } else {
       // Optional: keep failed order instead of deleting
-      await orderModel.findByIdAndUpdate(orderId, { status: "Failed" });
+      await orderModel.findByIdAndDelete({orderId});
       return res.json({ success: false, message: "Payment not completed" });
     }
 
