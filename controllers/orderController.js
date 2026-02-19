@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Place a new order
 // ==========================
 export const placeOrder = async (req, res) => {
-  const frontend_url = 'https://food-delivery-website-e-commerce-rw23.onrender.com';
+  const frontend_url = 'https://food-delivery-website-e-commerce-ekik.onrender.com';
 
   try {
     // ✅ Use userId from authMiddleware, not client input
