@@ -68,30 +68,67 @@ export const placeOrder = async (req, res) => {
 };
 
 // ==========================
-// Verify payment
+// Verify payment via query params (backup)
 // ==========================
 export const verifyOrder = async (req, res) => {
-  const success = req.body.success || req.query.success;
-  const orderId = req.body.orderId || req.query.orderId;
+  const success = req.query.success || req.body.success;
+  const orderId = req.query.orderId || req.body.orderId;
 
   try {
     if (!orderId) {
       return res.status(400).json({ success: false, message: "Missing orderId" });
     }
 
-    if (success === "true") {
+    if (success && success.toString() === "true") {
       await orderModel.findByIdAndUpdate(orderId, { payment: true });
       return res.json({ success: true, message: "Payment successful" });
     } else {
-      // Optional: keep failed order instead of deleting
-      await orderModel.findByIdAndDelete(orderId);
+      // Only delete if order exists
+      const order = await orderModel.findById(orderId);
+      if (order) await orderModel.findByIdAndDelete(orderId);
       return res.json({ success: false, message: "Payment not completed" });
     }
-
   } catch (error) {
     console.error("Verify Order Error:", error);
     res.status(500).json({ success: false, message: "Error verifying payment" });
   }
+};
+
+// ==========================
+// Stripe webhook for production (reliable verification)
+// ==========================
+export const stripeWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    // Use raw body for webhooks
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error("Webhook signature error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // ✅ Handle successful payment
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const orderId = session.payment_intent ? session.metadata?.orderId : null;
+
+    if (orderId) {
+      try {
+        await orderModel.findByIdAndUpdate(orderId, { payment: true });
+        console.log(`Order ${orderId} marked as paid via webhook`);
+      } catch (err) {
+        console.error("Error updating order payment via webhook:", err);
+      }
+    }
+  }
+
+  res.json({ received: true });
 };
 
 // ==========================
@@ -116,7 +153,6 @@ export const userOrders = async (req, res) => {
 // ==========================
 export const fetchAllOrders = async (req, res) => {
   try {
-    // ✅ Example: restrict to admin users
     if (!req.user.isAdmin) {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
