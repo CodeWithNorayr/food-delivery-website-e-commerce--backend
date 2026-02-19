@@ -55,21 +55,24 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
   }
 }
 
- export const verifyOrder = async (req,res) => {
-  const {success,orderId} = req.body
+export const verifyOrder = async (req, res) => {
+  const success = req.body.success || req.query.success;
+  const orderId = req.body.orderId || req.query.orderId;
+
   try {
-    if(success=="true"){
-      await orderModel.findByIdAndUpdate(orderId,{payment:true})
-      res.json({success:true,message:"Paid"})
+    if (success === "true") {
+      await orderModel.findByIdAndUpdate(orderId, { payment: true });
+      return res.json({ success: true, message: "Paid" });
     } else {
-      await orderModel.findByIdAndDelete(orderId)
-      res.json({success:false,message:"Not paid"})
+      await orderModel.findByIdAndDelete(orderId);
+      return res.json({ success: false, message: "Not paid" });
     }
   } catch (error) {
-    console.log(error)
-    res.json({success:false,message:"Error"})
+    console.log("Verify Error:", error);
+    res.json({ success: false, message: "Error" });
   }
-}
+};
+
 
 export const userOrders = async (req, res) => {
   try {
