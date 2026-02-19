@@ -9,6 +9,7 @@ import foodRouter from "./routes/foodRoute.js";
 import userRouter from "./routes/userRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
+import bodyParser from "body-parser";
 
 const app = express();
 
@@ -17,7 +18,6 @@ const PORT = process.env.PORT || 4000;
 
 // ✅ Middleware
 app.use(cors());
-app.use(express.json());
 
 // ✅ Connect to MongoDB
 connectDB();
@@ -25,7 +25,16 @@ connectDB();
 // ✅ Connect to Cloudinary
 cloudinaryConnect();
 
-// ✅ Routes
+// ==========================
+// Routes
+// ==========================
+
+// Stripe webhook needs raw body
+app.use('/api/order/webhook', bodyParser.raw({ type: 'application/json' }));
+
+// Other routes can use normal JSON parsing
+app.use(express.json());
+
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
