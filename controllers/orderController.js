@@ -35,7 +35,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
       product_data:{
         name:"Delivery Charges"
       },
-      unit_amount:2*100*80
+      unit_amount:2*100
     },
     quantity:1
    })
