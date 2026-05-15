@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import bodyParser from "body-parser";
 
 import connectDB from "./config/db.js";
 import cloudinaryConnect from "./config/cloudinary.js";
@@ -9,31 +10,41 @@ import foodRouter from "./routes/foodRoute.js";
 import userRouter from "./routes/userRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
-import bodyParser from "body-parser";
 
 const app = express();
 
-// ✅ Render assigns PORT via environment variable
+// ===================================
+// PORT
+// ===================================
 const PORT = process.env.PORT || 4000;
 
-// ✅ Middleware
+// ===================================
+// CORS
+// ===================================
 app.use(cors());
 
-// ✅ Connect to MongoDB
-connectDB();
+// Handle preflight requests
+app.options("*", cors());
 
-// ✅ Connect to Cloudinary
-cloudinaryConnect();
+// ===================================
+// STRIPE WEBHOOK
+// ===================================
+app.use(
+  "/api/order/webhook",
+  bodyParser.raw({ type: "application/json" })
+);
 
-// ==========================
-// Routes
-// ==========================
-
-// Stripe webhook needs raw body
-app.use('/api/order/webhook', bodyParser.raw({ type: 'application/json' }));
-
-// Other routes can use normal JSON parsing
+// ===================================
+// JSON PARSER
+// ===================================
 app.use(express.json());
+
+// ===================================
+// ROUTES
+// ===================================
+app.get("/", (req, res) => {
+  res.send("API is working");
+});
 
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
@@ -41,12 +52,24 @@ app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/allorder", orderRouter);
 
-// ✅ Health check
-app.get("/", (req, res) => {
-  res.send("API is working");
-});
+// ===================================
+// START SERVER
+// ===================================
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB Connected");
 
-// ✅ Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    await cloudinaryConnect();
+    console.log("Cloudinary Connected");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  } catch (error) {
+    console.log("Server startup error:", error);
+  }
+};
+
+startServer();
