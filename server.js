@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 
 // Handle preflight requests
-app.options("*", cors());
+app.options(/.*/, cors());
 
 // ===================================
 // STRIPE WEBHOOK
