@@ -57,18 +57,22 @@ app.use("/api/allorder", orderRouter);
 // ===================================
 const startServer = async () => {
   try {
+    console.log("Starting server...");
+
     await connectDB();
-    console.log("MongoDB Connected");
+    console.log("MongoDB connected");
 
     await cloudinaryConnect();
-    console.log("Cloudinary Connected");
+    console.log("Cloudinary connected");
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
 
   } catch (error) {
-    console.log("Server startup error:", error);
+    console.error("🔥 SERVER CRASH ERROR:");
+    console.error(error);
+    process.exit(1);
   }
 };
 
